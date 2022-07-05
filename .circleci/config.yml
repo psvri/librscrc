@@ -19,6 +19,10 @@ jobs:
           name: Testing x86_64
           command: |
             cargo test --target x86_64-unknown-linux-gnu  -- --nocapture
+      - run:
+          name: Testing x86
+          command: |
+            cargo test --target i686-unknown-linux-gnu  -- --nocapture
       - save_cache:
           key: x86-{{ checksum "Cargo.toml" }}
           paths:
