@@ -3,6 +3,11 @@ use crate::check32::Crc32Digest;
 
 use super::UpdateFn;
 
+#[cfg(all(feature = "hardware", feature = "nightly", target_arch = "aarch64"))]
+use crate::check32::platform::arm::compute_crc32_hardware_aarch64;
+#[cfg(all(feature = "hardware", feature = "nightly", target_arch = "aarch64"))]
+use std::arch::is_aarch64_feature_detected;
+
 const CRC32_POLYNOMIAL: u32 = 0x04C11DB7;
 const CRC32_LOOKUP_TABLE: [[u32; 256]; 16] =
     CustomCrc32::generate_lookup_table_16(CRC32_POLYNOMIAL);
@@ -61,6 +66,12 @@ impl Crc32 {
 
     #[cfg(feature = "hardware")]
     fn compute_hardware(prev_crc: u32, data: &[u8]) -> u32 {
+        unsafe {
+            #[cfg(all(target_arch = "aarch64", feature = "nightly"))]
+            if is_aarch64_feature_detected!("crc") {
+                return compute_crc32_hardware_aarch64(prev_crc, data);
+            }
+        }
         Self::compute_lookup(prev_crc, data)
     }
 
@@ -73,7 +84,7 @@ impl Crc32 {
             data,
         );
         //prev_crc
-        Self::compute_lookup(prev_crc, data)
+        Self::compute_hardware(prev_crc, data)
     }
 }
 

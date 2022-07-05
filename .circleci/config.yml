@@ -31,6 +31,38 @@ jobs:
             - ~/.cargo
             - ./target
 
+  test-arm:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: Setup
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+            rustup toolchain install nightly
+            sudo apt update
+            sudo apt install gcc-multilib -y
+            sudo apt install build-essential -y
+      - restore_cache:
+          keys:
+            - build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
+            - build-cache-{{ arch }}-{{ .Branch }}
+      - run:
+          name: Testing aarch64
+          command: |
+            cargo test --target x86_64-unknown-linux-gnu  -- --nocapture
+      - run:
+          name: Testing x86
+          command: |
+            cargo test --target i686-unknown-linux-gnu  -- --nocapture
+      - save_cache:
+          key: build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+            - ./target
+
 workflows:
   test:
     jobs:
