@@ -40,11 +40,9 @@ jobs:
       - run:
           name: Setup
           command: |
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source $HOME/.cargo/env
             rustup toolchain install nightly
-            sudo apt update
-            sudo apt install gcc-multilib -y
-            sudo apt install build-essential -y
       - restore_cache:
           keys:
             - build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
@@ -52,11 +50,11 @@ jobs:
       - run:
           name: Testing aarch64
           command: |
-            cargo test --target x86_64-unknown-linux-gnu  -- --nocapture
+            cargo test -- --nocapture
       - run:
-          name: Testing x86
+          name: Testing aarch64-nightly
           command: |
-            cargo test --target i686-unknown-linux-gnu  -- --nocapture
+            cargo +nightly test --features all -- --nocapture
       - save_cache:
           key: build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -67,3 +65,4 @@ workflows:
   test:
     jobs:
       - test-x86
+      - test-arm
