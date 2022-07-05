@@ -1,6 +1,6 @@
 #[cfg(feature = "hardware")]
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-use crate::crc32::platform::x86::compute_crc;
+use crate::check32::platform::x86::compute_crc;
 
 pub struct CustomCrc32 {}
 

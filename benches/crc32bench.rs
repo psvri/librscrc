@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use librscrc::crc32::crc32::Crc32;
-use librscrc::crc32::crc32c::Crc32C;
-use librscrc::crc32::Crc32Digest;
+use librscrc::check32::crc32::Crc32;
+use librscrc::check32::crc32c::Crc32C;
+use librscrc::check32::Crc32Digest;
 
 fn bench_crc(c: &mut Criterion) {
     let mut group = c.benchmark_group("crc32");
