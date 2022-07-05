@@ -7,9 +7,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Add target i686-unknown-linux-gnu
+          name: Setup
           command: |
             rustup target add i686-unknown-linux-gnu
+            sudo apt update
+            sudo apt install build-essential -y
       - restore_cache:
           key: x86-{{ checksum "Cargo.toml" }}
       - run:
