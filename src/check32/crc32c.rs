@@ -1,11 +1,16 @@
 use crate::check32::custom_crc32::CustomCrc32;
 use crate::check32::{Crc32Digest, UpdateFn};
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(feature = "hardware", target_arch = "x86_64"))]
 use crate::check32::platform::x86::compute_crc32c_hardware_x86_64;
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(feature = "hardware", target_arch = "x86"))]
 use crate::check32::platform::x86::compute_crc32c_hardware_x86;
+
+#[cfg(all(feature = "hardware", feature = "nightly", target_arch = "aarch64"))]
+use crate::check32::platform::arm::compute_crc32c_hardware_aarch64;
+#[cfg(all(feature = "hardware", feature = "nightly", target_arch = "aarch64"))]
+use std::arch::is_aarch64_feature_detected;
 
 const CRC32C_POLYNOMIAL: u32 = 0x1EDC6F41;
 const CRC32C_LOOKUP_TABLE: [[u32; 256]; 16] =
@@ -73,6 +78,10 @@ impl Crc32C {
             #[cfg(target_arch = "x86")]
             if is_x86_feature_detected!("sse4.2") {
                 return compute_crc32c_hardware_x86(prev_crc, data);
+            }
+            #[cfg(all(target_arch = "aarch64", feature = "nightly"))]
+            if is_aarch64_feature_detected!("crc") {
+                return compute_crc32c_hardware_aarch64(prev_crc, data);
             }
         }
 

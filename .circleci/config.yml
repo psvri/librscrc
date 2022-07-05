@@ -31,7 +31,38 @@ jobs:
             - ~/.cargo
             - ./target
 
+  test-arm:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: Setup
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source $HOME/.cargo/env
+            rustup toolchain install nightly
+      - restore_cache:
+          keys:
+            - build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
+            - build-cache-{{ arch }}-{{ .Branch }}
+      - run:
+          name: Testing aarch64
+          command: |
+            cargo test -- --nocapture
+      - run:
+          name: Testing aarch64-nightly
+          command: |
+            cargo +nightly test --features all -- --nocapture
+      - save_cache:
+          key: build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+            - ./target
+
 workflows:
   test:
     jobs:
       - test-x86
+      - test-arm

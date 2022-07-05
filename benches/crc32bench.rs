@@ -8,8 +8,8 @@ fn bench_crc(c: &mut Criterion) {
     //let big: &[u8; 23] = b"1234567890Hello, World!";
     //let big = include_bytes!("../sample_files/test_data.txt");
     //let big = include_bytes!("../sample_files/test_data_odd_size.txt");
-    //let big = include_bytes!("../Cargo.lock");
-    let big = include_bytes!("../sample_files/granular_concrete_diff_1k.jpg");
+    let big = include_bytes!("../Cargo.lock");
+    //let big = include_bytes!("../sample_files/granular_concrete_diff_1k.jpg");
     group.throughput(Throughput::Bytes(big.len() as u64));
 
     group.bench_with_input(
