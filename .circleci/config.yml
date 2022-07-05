@@ -6,6 +6,10 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - run:
+          name: Add target i686-unknown-linux-gnu
+          command: |
+            rustup target add i686-unknown-linux-gnu
       - restore_cache:
           key: x86-{{ checksum "Cargo.toml" }}
       - run:
