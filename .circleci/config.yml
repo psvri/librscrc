@@ -14,7 +14,9 @@ jobs:
             sudo apt install gcc-multilib -y
             sudo apt install build-essential -y
       - restore_cache:
-          key: x86-{{ checksum "Cargo.toml" }}
+          keys:
+            - build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
+            - build-cache-{{ arch }}-{{ .Branch }}
       - run:
           name: Testing x86_64
           command: |
@@ -24,7 +26,7 @@ jobs:
           command: |
             cargo test --target i686-unknown-linux-gnu  -- --nocapture
       - save_cache:
-          key: x86-{{ checksum "Cargo.toml" }}
+          key: build-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
             - ./target
