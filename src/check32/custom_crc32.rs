@@ -2,6 +2,14 @@
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use crate::check32::platform::x86::compute_crc;
 
+#[cfg(feature = "hardware")]
+#[cfg(target_arch = "aarch64")]
+use crate::check32::platform::arm::compute_crc;
+
+#[cfg(feature = "hardware")]
+#[cfg(target_arch = "aarch64")]
+use std::arch::is_aarch64_feature_detected;
+
 pub struct CustomCrc32 {}
 
 impl CustomCrc32 {
@@ -68,6 +76,10 @@ impl CustomCrc32 {
         unsafe {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             if is_x86_feature_detected!("sse4.2") && is_x86_feature_detected!("pclmulqdq") {
+                (prev_crc, data) = compute_crc(prev_crc, constants, rev_polynomial, data);
+            }
+            #[cfg(target_arch = "aarch64")]
+            if is_aarch64_feature_detected!("neon") && is_aarch64_feature_detected!("aes") {
                 (prev_crc, data) = compute_crc(prev_crc, constants, rev_polynomial, data);
             }
         }

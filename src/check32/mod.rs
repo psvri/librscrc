@@ -11,10 +11,6 @@ pub mod custom_crc32;
 
 #[cfg(any(
     all(feature = "hardware", any(target_arch = "x86", target_arch = "x86_64")),
-    all(
-        feature = "hardware",
-        feature = "nightly",
-        any(target_arch = "aarch64")
-    )
+    all(feature = "hardware", any(target_arch = "aarch64"))
 ))]
 mod platform;
