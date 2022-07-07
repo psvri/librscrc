@@ -9,6 +9,7 @@ use core::arch::aarch64::{
     vsetq_lane_u32,
 };
 
+#[cfg(all(feature = "hardware", target_arch = "aarch64"))]
 use std::arch::asm;
 
 #[cfg(all(feature = "nightly", feature = "hardware", target_arch = "aarch64"))]
@@ -202,6 +203,7 @@ unsafe fn pmull_11(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
     result
 }
 
+/// fold 128 bits
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn fold_128(a: uint64x2_t, mut b: uint64x2_t, constant: uint64x2_t) -> uint64x2_t {
@@ -213,6 +215,7 @@ unsafe fn fold_128(a: uint64x2_t, mut b: uint64x2_t, constant: uint64x2_t) -> ui
     b
 }
 
+/// read 128bits
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn get_simd_128(data: &mut &[u8]) -> uint64x2_t {
@@ -221,12 +224,3 @@ unsafe fn get_simd_128(data: &mut &[u8]) -> uint64x2_t {
     *data = &data[16..];
     vld1q_u64([x1, x2].as_ptr())
 }
-
-/*#[target_feature(enable = "neon")]
-#[cfg(target_arch = "aarch64")]
-#[inline]
-unsafe fn get_simd_128(data: &mut &[u8]) -> uint64x2_t {
-    let result = vreinterpretq_u64_u8(vld1q_u8(data[0..16].as_ptr()));
-    *data = &data[16..];
-    result
-}*/
