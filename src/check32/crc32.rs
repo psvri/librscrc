@@ -26,6 +26,7 @@ pub struct Crc32 {
 }
 
 impl Crc32 {
+    /// Creates a new `Crc32` using naive approach
     pub fn new() -> Self {
         Self {
             state: 0,
@@ -33,6 +34,7 @@ impl Crc32 {
         }
     }
 
+    /// Creates a new `Crc32` using a table lookup approach
     pub fn new_lookup() -> Self {
         Self {
             state: 0,
@@ -41,6 +43,9 @@ impl Crc32 {
     }
 
     #[cfg(feature = "hardware")]
+    /// Creates a new `Crc32` using hardware crc intrinsics
+    /// - For aarch64 platform it would use core::arch::aarch64::__crc32* intrinsics like <core::arch::aarch64::__crc32d>
+    /// - Otherwise defaults to table lookup approach
     pub fn new_hardware() -> Self {
         Self {
             state: 0,
@@ -49,6 +54,11 @@ impl Crc32 {
     }
 
     #[cfg(feature = "hardware")]
+    /// Creates a new `Crc32` using simd intrinsics based on
+    /// [intel's paper](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf)
+    /// - x86 and x86_64 requires the cpu features sse4.2 and pclmulqdq
+    /// - aarch64 requires the cpu features neon and aes
+    /// - Otherwise defaults to using hardware crc intrinsics
     pub fn new_simd() -> Self {
         Self {
             state: 0,

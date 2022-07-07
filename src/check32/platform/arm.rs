@@ -187,8 +187,8 @@ unsafe fn pmull_00(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
 
 /// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
 /// I had to use asm macro here since this was generating a lot of fmov.
-/// I wasnt the only one who faced it, tikvs crc64 implementation also had the same issue
-/// (https://github.com/tikv/crc64fast/blob/master/src/pclmulqdq/aarch64.rs)
+/// I wasn't the only one who faced it, tikvs crc64 implementation also had the same issue
+/// <(https://github.com/tikv/crc64fast/blob/master/src/pclmulqdq/aarch64.rs)>
 #[target_feature(enable = "aes")]
 #[cfg(target_arch = "aarch64")]
 #[inline]

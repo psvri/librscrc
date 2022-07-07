@@ -30,6 +30,7 @@ pub struct Crc32C {
 }
 
 impl Crc32C {
+    /// Creates a new `Crc32C` using naive approach
     pub fn new() -> Self {
         Self {
             state: 0,
@@ -37,6 +38,7 @@ impl Crc32C {
         }
     }
 
+    /// Creates a new `Crc32C` using a table lookup approach
     pub fn new_lookup() -> Self {
         Self {
             state: 0,
@@ -45,6 +47,10 @@ impl Crc32C {
     }
 
     #[cfg(feature = "hardware")]
+    /// Creates a new `Crc32C` using hardware crc intrinsics
+    /// - For x86 and x86_64 platform it would use core::arch::x86_64::_mm_crc32_u* intrinsics like <core::arch::x86_64::_mm_crc32_u64>
+    /// - For aarch64 platform it would use core::arch::aarch64::__crc32c* intrinsics like <core::arch::aarch64::__crc32cd>
+    /// - Otherwise defaults to table lookup approach
     pub fn new_hardware() -> Self {
         Self {
             state: 0,
@@ -53,6 +59,11 @@ impl Crc32C {
     }
 
     #[cfg(feature = "hardware")]
+    /// Creates a new `Crc32C` using simd intrinsics based on
+    /// [intel's paper](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf)
+    /// - x86 and x86_64 requires the cpu features sse4.2, pclmulqdq
+    /// - aarch64 requires the cpu features neon, aes
+    /// - Otherwise defaults to using hardware crc intrinsics
     pub fn new_simd() -> Self {
         Self {
             state: 0,
@@ -69,7 +80,7 @@ impl Crc32C {
     }
 
     #[cfg(feature = "hardware")]
-    pub fn compute_hardware(prev_crc: u32, data: &[u8]) -> u32 {
+    fn compute_hardware(prev_crc: u32, data: &[u8]) -> u32 {
         unsafe {
             #[cfg(target_arch = "x86_64")]
             if is_x86_feature_detected!("sse4.2") {
@@ -89,7 +100,7 @@ impl Crc32C {
     }
 
     #[cfg(feature = "hardware")]
-    pub fn compute_simd(mut prev_crc: u32, mut data: &[u8]) -> u32 {
+    fn compute_simd(mut prev_crc: u32, mut data: &[u8]) -> u32 {
         (prev_crc, data) = CustomCrc32::crc32_simd(
             prev_crc,
             CRC32C_SIMD_CONSTANTS,

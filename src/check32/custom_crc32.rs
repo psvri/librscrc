@@ -10,10 +10,73 @@ use crate::check32::platform::arm::compute_crc;
 #[cfg(target_arch = "aarch64")]
 use std::arch::is_aarch64_feature_detected;
 
-pub struct CustomCrc32 {}
+use crate::check32::Crc32Digest;
+
+pub struct CustomCrc32 {
+    polynomial_u32: u32,
+    rev_polynomial_u64: u64,
+    simd_constants: [u64; 7],
+    lookup_table: [[u32; 256]; 16],
+    compute: fn(&mut Self, &[u8]),
+    state: u32,
+}
 
 impl CustomCrc32 {
-    pub const fn crc32_naive(prev_crc: u32, polynomial: u32, data: &[u8]) -> u32 {
+    /// Creates a new `CustomCrc32` using naive approach
+    pub fn new(polynomial: u32) -> Self {
+        let polynomial_u32 = polynomial;
+        let polynomial_u64 = polynomial_u32 as u64 & 0x1_FFFF_FFFF;
+        let rev_polynomial_u64 = Self::reverse_constant(polynomial_u64);
+        let simd_constants = Self::generate_simd_reflected_constants(polynomial_u64);
+        let lookup_table = Self::generate_lookup_table_16(polynomial_u32);
+        Self {
+            polynomial_u32,
+            rev_polynomial_u64,
+            simd_constants,
+            state: 0,
+            compute: Self::compute_naive,
+            lookup_table,
+        }
+    }
+
+    /// Creates a new `CustomCrc32` using a table lookup approach
+    pub fn new_lookup(polynomial: u32) -> Self {
+        let mut crc = Self::new(polynomial);
+        crc.compute = Self::compute_lookup;
+        crc
+    }
+
+    #[cfg(feature = "hardware")]
+    /// Creates a new `CustomCrc32` using simd intrinsics based on
+    /// [intel's paper](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf)
+    /// - x86 and x86_64 requires the cpu features sse4.2, pclmulqdq
+    /// - aarch64 requires the cpu features neon, aes
+    /// - Otherwise defaults to using hardware crc intrinsics
+    pub fn new_simd(polynomial: u64) -> Self {
+        let mut crc = Self::new(polynomial as u32);
+        crc.compute = Self::compute_simd;
+        crc
+    }
+
+    fn compute_naive(&mut self, data: &[u8]) {
+        self.state = Self::crc32_naive(self.state, self.polynomial_u32, data);
+    }
+
+    fn compute_lookup(&mut self, data: &[u8]) {
+        self.state = Self::crc32_lookup(self.state, &self.lookup_table, data);
+    }
+
+    fn compute_simd(&mut self, mut data: &[u8]) {
+        (self.state, data) = Self::crc32_simd(
+            self.state,
+            self.simd_constants,
+            self.rev_polynomial_u64,
+            data,
+        );
+        self.state = Self::crc32_lookup(self.state, &self.lookup_table, data);
+    }
+
+    pub(crate) const fn crc32_naive(prev_crc: u32, polynomial: u32, data: &[u8]) -> u32 {
         let mut crc = !prev_crc;
         let polynomial = polynomial.reverse_bits();
         let mut i = 0;
@@ -36,7 +99,11 @@ impl CustomCrc32 {
         !crc
     }
 
-    pub fn crc32_lookup(prev_crc: u32, lookup_table: &[[u32; 256]; 16], mut data: &[u8]) -> u32 {
+    pub(crate) fn crc32_lookup(
+        prev_crc: u32,
+        lookup_table: &[[u32; 256]; 16],
+        mut data: &[u8],
+    ) -> u32 {
         let mut crc: u32 = !prev_crc;
 
         while data.len() >= 16 {
@@ -219,11 +286,25 @@ impl CustomCrc32 {
     }
 }
 
+impl Crc32Digest for CustomCrc32 {
+    fn update(&mut self, data: &[u8]) {
+        (self.compute)(self, data)
+    }
+
+    fn digest(&self) -> u32 {
+        self.state
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     const POLYNOMIAL: u64 = 0x104C11DB7u64;
+
+    static LARGE_DATA_2: &[u8; 241] = include_bytes!("../../sample_files/test_data_odd_size.txt");
+
+    const LARGE_DATA_2_CRC32: u32 = 0x7EC1A494;
 
     #[test]
     fn test_crc32() {
@@ -263,5 +344,18 @@ mod tests {
         assert_eq!(constants[4], 0x163cd6124);
         assert_eq!(constants[5], 0x1db710640);
         assert_eq!(constants[6], 0x1F7011641);
+    }
+
+    #[test]
+    fn test_custom_crc32() {
+        let mut crc = CustomCrc32::new(POLYNOMIAL as u32);
+        crc.update(LARGE_DATA_2);
+        assert_eq!(crc.digest(), LARGE_DATA_2_CRC32);
+        crc = CustomCrc32::new_lookup(POLYNOMIAL as u32);
+        crc.update(LARGE_DATA_2);
+        assert_eq!(crc.digest(), LARGE_DATA_2_CRC32);
+        crc = CustomCrc32::new_simd(POLYNOMIAL);
+        crc.update(LARGE_DATA_2);
+        assert_eq!(crc.digest(), LARGE_DATA_2_CRC32);
     }
 }

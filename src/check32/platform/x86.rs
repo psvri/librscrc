@@ -51,7 +51,7 @@ pub(crate) unsafe fn compute_crc32c_hardware_x86(prev_crc: u32, data: &[u8]) -> 
 }
 
 /// This function computes the crc values based on the implementation on chromiums zlib code present
-/// in https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/zlib/crc32_simd.c
+/// in <https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/zlib/crc32_simd.c>
 #[target_feature(enable = "sse4.2", enable = "pclmulqdq", enable = "sse2")]
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub(crate) unsafe fn compute_crc(
