@@ -115,8 +115,6 @@ impl Crc32Digest for Crc32C {
 mod tests {
     use super::*;
 
-    use super::*;
-
     static EMPTY_DATA: &[u8; 0] = b"";
     static SMALL_DATA_1: &[u8; 9] = b"123456789";
     static SMALL_DATA_2: &[u8; 11] = b"hello-world";
