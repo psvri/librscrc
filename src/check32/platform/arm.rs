@@ -59,7 +59,7 @@ pub(crate) unsafe fn compute_crc32c_hardware_aarch64(prev_crc: u32, data: &[u8])
 
 /// This function computes the crc values based on the implementation of chromiums zlib
 /// https://github.com/chromium/chromium/commit/a0771caebe87477558454cc6d793562e3afe74ac
-#[target_feature(enable = "neon")]
+#[target_feature(enable = "neon", enable = "aes")]
 #[cfg(target_arch = "aarch64")]
 pub(crate) unsafe fn compute_crc(
     prev_crc: u32,
@@ -110,7 +110,6 @@ pub(crate) unsafe fn compute_crc(
 
     let k5k6 = vld1q_u64([constants[4], constants[5]].as_ptr());
 
-    //x2 = pmull_01(x2, k5k6);
     x2 = vreinterpretq_u64_u8(vextq_u8(vreinterpretq_u8_u64(x), vdupq_n_u8(0), 4));
     x = vandq_u64(x, x3);
     x = pmull_00(x, k5k6);
@@ -131,7 +130,6 @@ pub(crate) unsafe fn compute_crc(
 }
 
 /// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
-/*#[target_feature(enable = "neon", enable = "aes")]
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn pmull_01(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
@@ -141,7 +139,6 @@ unsafe fn pmull_01(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
 }
 
 /// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
-#[target_feature(enable = "neon", enable = "aes")]
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn pmull_00(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
@@ -150,8 +147,7 @@ unsafe fn pmull_00(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
     vreinterpretq_u64_p128(result)
 }
 
-/// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
-#[target_feature(enable = "neon", enable = "aes")]
+/*/// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn pmull_11(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
@@ -160,8 +156,7 @@ unsafe fn pmull_11(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
     vreinterpretq_u64_p128(result)
 }*/
 
-/// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
-#[target_feature(enable = "neon", enable = "aes")]
+/*/// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn pmull_01(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
@@ -173,10 +168,9 @@ unsafe fn pmull_01(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         v2 = in(vreg) vgetq_lane_u64(b, 1),
     );
     result
-}
+}*/
 
-/// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
-#[target_feature(enable = "neon", enable = "aes")]
+/*/// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn pmull_00(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
@@ -188,10 +182,13 @@ unsafe fn pmull_00(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         v2 = in(vreg) b,
     );
     result
-}
+}*/
 
 /// performing the equivalent of _mm_clmulepi64_si128(a, b, 0x00);
-#[target_feature(enable = "neon", enable = "aes")]
+/// I had to use asm macro here since this was generating a lot of fmov.
+/// I wasnt the only one who faced it, tikvs crc64 implementation also had the same issue
+/// (https://github.com/tikv/crc64fast/blob/master/src/pclmulqdq/aarch64.rs)
+#[target_feature(enable = "aes")]
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn pmull_11(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
@@ -205,7 +202,6 @@ unsafe fn pmull_11(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
     result
 }
 
-#[target_feature(enable = "neon")]
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn fold_128(a: uint64x2_t, mut b: uint64x2_t, constant: uint64x2_t) -> uint64x2_t {
@@ -217,7 +213,6 @@ unsafe fn fold_128(a: uint64x2_t, mut b: uint64x2_t, constant: uint64x2_t) -> ui
     b
 }
 
-#[target_feature(enable = "neon")]
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn get_simd_128(data: &mut &[u8]) -> uint64x2_t {
