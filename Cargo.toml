@@ -3,8 +3,12 @@ name = "librscrc"
 version = "0.1.0"
 edition = "2021"
 description = "librscrc is a collection of crc32 algorithms with support for various approaches and custom polynomial."
+exclude = ["benches", "sample_files", ".circleci", ".gitignore"]
+keywords = ["checksum", "crc32", "crc", "simd"]
+readme = "Readme.md"
+repository = "https://github.com/psvri/librscrc"
+license = "MIT OR Apache-2.0"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dev-dependencies]
 criterion = "0.3"

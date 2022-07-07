@@ -1,7 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use librscrc::check32::crc32::Crc32;
-use librscrc::check32::crc32c::Crc32C;
-use librscrc::check32::Crc32Digest;
+use librscrc::prelude::*;
 
 fn bench_crc(c: &mut Criterion) {
     let mut group = c.benchmark_group("crc32");
@@ -66,6 +64,42 @@ fn bench_crc(c: &mut Criterion) {
         |b, data| {
             b.iter(|| {
                 let mut crc = Crc32::new_simd();
+                crc.update(*data);
+                crc.digest()
+            })
+        },
+    );
+
+    group.bench_with_input(
+        BenchmarkId::new("custom_crc32_simd", big.len() as u64),
+        &big,
+        |b, data| {
+            b.iter(|| {
+                let mut crc = CustomCrc32::new_simd(0x104C11DB7u64);
+                crc.update(*data);
+                crc.digest()
+            })
+        },
+    );
+
+    group.bench_with_input(
+        BenchmarkId::new("custom_crc32_lookup", big.len() as u64),
+        &big,
+        |b, data| {
+            b.iter(|| {
+                let mut crc = CustomCrc32::new_lookup(0x04C11DB7);
+                crc.update(*data);
+                crc.digest()
+            })
+        },
+    );
+
+    group.bench_with_input(
+        BenchmarkId::new("custom_crc32_naive", big.len() as u64),
+        &big,
+        |b, data| {
+            b.iter(|| {
+                let mut crc = CustomCrc32::new(0x04C11DB7);
                 crc.update(*data);
                 crc.digest()
             })
