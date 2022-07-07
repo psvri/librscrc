@@ -23,7 +23,7 @@ pub struct CustomCrc32 {
 
 impl CustomCrc32 {
     /// Creates a new `CustomCrc32` using naive approach
-    pub fn new(polynomial: u32) -> Self {
+    pub fn new_naive(polynomial: u32) -> Self {
         let polynomial_u32 = polynomial;
         let polynomial_u64 = polynomial_u32 as u64 & 0x1_FFFF_FFFF;
         let rev_polynomial_u64 = Self::reverse_constant(polynomial_u64);
@@ -41,7 +41,7 @@ impl CustomCrc32 {
 
     /// Creates a new `CustomCrc32` using a table lookup approach
     pub fn new_lookup(polynomial: u32) -> Self {
-        let mut crc = Self::new(polynomial);
+        let mut crc = Self::new_naive(polynomial);
         crc.compute = Self::compute_lookup;
         crc
     }
@@ -53,7 +53,7 @@ impl CustomCrc32 {
     /// - aarch64 requires the cpu features neon, aes
     /// - Otherwise defaults to using hardware crc intrinsics
     pub fn new_simd(polynomial: u64) -> Self {
-        let mut crc = Self::new(polynomial as u32);
+        let mut crc = Self::new_naive(polynomial as u32);
         crc.compute = Self::compute_simd;
         crc
     }
@@ -348,7 +348,7 @@ mod tests {
 
     #[test]
     fn test_custom_crc32() {
-        let mut crc = CustomCrc32::new(POLYNOMIAL as u32);
+        let mut crc = CustomCrc32::new_naive(POLYNOMIAL as u32);
         crc.update(LARGE_DATA_2);
         assert_eq!(crc.digest(), LARGE_DATA_2_CRC32);
         crc = CustomCrc32::new_lookup(POLYNOMIAL as u32);

@@ -27,7 +27,7 @@ pub struct Crc32 {
 
 impl Crc32 {
     /// Creates a new `Crc32` using naive approach
-    pub fn new() -> Self {
+    pub fn new_naive() -> Self {
         Self {
             state: 0,
             compute: Self::compute_naive,
@@ -125,7 +125,7 @@ mod tests {
     const LARGE_DATA_2_CRC32: u32 = 0x7EC1A494;
 
     fn test_naive(data: &[u8], expected_crc: u32) {
-        let mut crc = Crc32::new();
+        let mut crc = Crc32::new_naive();
         crc.update(data);
         assert_eq!(crc.digest(), expected_crc);
     }

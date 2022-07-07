@@ -4,16 +4,16 @@
 //!
 //! # Usage examples
 //! ## naive
-//! ```
+//!```
 //! use librscrc::prelude::*;
 //!
 //! // compute crc32
-//! let mut crc = Crc32::new();
+//! let mut crc = Crc32::new_naive();
 //! crc.update(b"123456789");
 //! assert_eq!(crc.digest(), 0xCBF43926);
 //!
 //! // compute crc32c
-//! let mut crc = Crc32C::new();
+//! let mut crc = Crc32C::new_naive();
 //! crc.update(b"123456789");
 //! assert_eq!(crc.digest(), 0xE3069283);
 //! ```

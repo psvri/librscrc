@@ -15,7 +15,7 @@ fn bench_crc(c: &mut Criterion) {
         &big,
         |b, data| {
             b.iter(|| {
-                let mut crc = Crc32C::new();
+                let mut crc = Crc32C::new_naive();
                 crc.update(*data);
                 crc.digest()
             })
@@ -99,7 +99,7 @@ fn bench_crc(c: &mut Criterion) {
         &big,
         |b, data| {
             b.iter(|| {
-                let mut crc = CustomCrc32::new(0x04C11DB7);
+                let mut crc = CustomCrc32::new_naive(0x04C11DB7);
                 crc.update(*data);
                 crc.digest()
             })
