@@ -44,5 +44,14 @@
 //!
 //!```
 
+#![cfg_attr(
+    all(
+        feature = "nightly",
+        feature = "hardware",
+        any(target_arch = "aarch64")
+    ),
+    feature(stdsimd)
+)]
+
 pub mod check32;
 pub mod prelude;
