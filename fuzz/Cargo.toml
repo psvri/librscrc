@@ -1,0 +1,32 @@
+[package]
+name = "librscrc-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.librscrc]
+path = ".."
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "crc32"
+path = "fuzz_targets/crc32.rs"
+test = false
+doc = false
+
+
+[[bin]]
+name = "custom_crc32"
+path = "fuzz_targets/custom_crc32.rs"
+test = false
+doc = false
