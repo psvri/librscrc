@@ -1,6 +1,6 @@
 # librscrc
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/psvri/librscrc/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/psvri/librscrc/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/psvri/librscrc/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/psvri/librscrc/tree/main) [![librscrc](https://img.shields.io/crates/v/librscrc)](https://crates.io/crates/librscrc) [![docs](https://img.shields.io/docsrs/librscrc)](https://docs.rs/librscrc/0.1.0/librscrc/)
 
 Librscrc is a collection of crc32 algorithms with support for various approaches like simd and table based lookup and
 custom polynomial implemented in rust.
