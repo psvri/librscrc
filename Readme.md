@@ -16,7 +16,7 @@ Cargo.toml, there by disabling simd and hardware crc intrinsics support.
 
 ## Performance
 
-Your mileage may vary based on the hardware used. This section is meant to only give comparison of various approaches.
+Your mileage may vary based on the hardware used. This section is meant to only give a comparison of various approaches.
 
 - Nightly compiler is required to use hardware crc instructions on aarch64 with feature flag "nightly" enable.
 - Simd and hardware instructions are used if the required cpu features are detected at run time. In case it's not found,
