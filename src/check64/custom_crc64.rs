@@ -192,8 +192,7 @@ mod tests {
             0x39ca_c5ca_fc66_6bf3_25bc_9dd4_c0f3_6330,
         )
     }
-
-    #[test]
+    
     fn test_simd_constants() {
         let constants = CustomCrc64::generate_simd_reflected_constants(POLYNOMIAL);
 
